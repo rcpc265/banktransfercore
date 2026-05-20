@@ -1,4 +1,4 @@
-package com.portfolio.banktransfercore.application.ports;
+package com.portfolio.banktransfercore.application.ports.out;
 
 import com.portfolio.banktransfercore.domain.Account;
 import java.util.Optional;
