@@ -3,27 +3,19 @@ package com.portfolio.banktransfercore.domain;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 public class Account {
-    private static final Pattern ACCOUNT_PATTERN = Pattern.compile("^CTA-\\d{3,10}$");
-
     private final UUID id;
-    private final String accountNumber;
+    private final AccountNumber accountNumber;
     private BigDecimal balance;
 
-    public Account(UUID id, String accountNumber, BigDecimal balance) {
+    public Account(UUID id, AccountNumber accountNumber, BigDecimal balance) {
         this.id = Objects.requireNonNull(id, "El ID no puede ser null");
-
-        if (accountNumber == null || !ACCOUNT_PATTERN.matcher(accountNumber).matches()) {
-            throw new IllegalArgumentException("Número de cuenta inválido");
-        }
+        this.accountNumber = Objects.requireNonNull(accountNumber, "El número de cuenta no puede ser null");
 
         if (balance == null || balance.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Saldo inicial no puede ser negativo");
         }
-
-        this.accountNumber = accountNumber;
         this.balance = balance;
     }
 
@@ -45,6 +37,6 @@ public class Account {
     }
 
     public UUID getId() { return id; }
-    public String getAccountNumber() { return accountNumber; }
+    public AccountNumber getAccountNumber() { return accountNumber; }
     public BigDecimal getBalance() { return balance; }
 }

@@ -1,5 +1,6 @@
 package com.portfolio.banktransfercore.domain;
 
+import com.portfolio.banktransfercore.domain.account.Account;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.UUID;
