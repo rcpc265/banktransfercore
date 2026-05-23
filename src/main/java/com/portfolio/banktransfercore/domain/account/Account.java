@@ -6,10 +6,10 @@ import java.util.UUID;
 
 public class Account {
     private final UUID id;
-    private final AccountNumber accountNumber;
+    private final String accountNumber;
     private BigDecimal balance;
 
-    public Account(UUID id, AccountNumber accountNumber, BigDecimal balance) {
+    public Account(UUID id, String accountNumber, BigDecimal balance) {
         this.id = Objects.requireNonNull(id, "El ID no puede ser null");
         this.accountNumber = Objects.requireNonNull(accountNumber, "El número de cuenta no puede ser null");
 
@@ -37,6 +37,7 @@ public class Account {
     }
 
     public UUID getId() { return id; }
-    public AccountNumber getAccountNumber() { return accountNumber; }
+    public String getAccountNumber() { return accountNumber; }
     public BigDecimal getBalance() { return balance; }
 }
+
