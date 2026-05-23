@@ -3,7 +3,7 @@ package com.portfolio.banktransfercore.infrastructure.config;
 import com.portfolio.banktransfercore.application.ports.in.TransferUseCase;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
 import com.portfolio.banktransfercore.application.services.ProcessTransferService;
-import com.portfolio.banktransfercore.domain.Account;
+import com.portfolio.banktransfercore.domain.account.Account;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
