@@ -1,4 +1,4 @@
-package com.portfolio.banktransfercore.domain;
+package com.portfolio.banktransfercore.domain.account;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -10,28 +10,28 @@ public class Account {
     private BigDecimal balance;
 
     public Account(UUID id, String accountNumber, BigDecimal balance) {
-        this.id = Objects.requireNonNull(id, "El ID no puede ser null");
-        this.accountNumber = Objects.requireNonNull(accountNumber, "El número de cuenta no puede ser null");
+        this.id = Objects.requireNonNull(id, "Account ID cannot be null");
+        this.accountNumber = Objects.requireNonNull(accountNumber, "Account number cannot be null");
 
         if (balance == null || balance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Saldo inicial no puede ser negativo");
+            throw new IllegalArgumentException("Initial balance cannot be negative");
         }
         this.balance = balance;
     }
 
     public void debit(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Monto debe ser mayor a cero");
+            throw new IllegalArgumentException("Amount must be greater than zero");
         }
         if (this.balance.compareTo(amount) < 0) {
-            throw new IllegalStateException("Fondos insuficientes");
+            throw new IllegalStateException("Insufficient funds");
         }
         this.balance = this.balance.subtract(amount);
     }
 
     public void credit(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Monto debe ser mayor a cero");
+            throw new IllegalArgumentException("Amount must be greater than zero");
         }
         this.balance = this.balance.add(amount);
     }
