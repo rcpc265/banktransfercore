@@ -13,10 +13,10 @@ public class Transfer {
 
     public Transfer(UUID id, String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount, LocalDateTime createdAt) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El monto de la transferencia debe ser mayor a cero");
+            throw new IllegalArgumentException("Transfer amount must be greater than zero");
         }
         if (sourceAccountNumber.equals(destinationAccountNumber)) {
-            throw new IllegalArgumentException("La cuenta de origen y destino no pueden ser iguales");
+            throw new IllegalArgumentException("Source and destination accounts cannot be the same");
         }
         this.id = id;
         this.sourceAccountNumber = sourceAccountNumber;

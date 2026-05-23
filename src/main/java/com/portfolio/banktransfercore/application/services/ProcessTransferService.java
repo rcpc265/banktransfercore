@@ -2,7 +2,7 @@ package com.portfolio.banktransfercore.application.services;
 
 import com.portfolio.banktransfercore.application.ports.in.TransferUseCase;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
-import com.portfolio.banktransfercore.domain.Account;
+import com.portfolio.banktransfercore.domain.account.Account;
 import java.math.BigDecimal;
 
 public class ProcessTransferService implements TransferUseCase {
@@ -15,10 +15,10 @@ public class ProcessTransferService implements TransferUseCase {
     @Override
     public void execute(String sourceNumber, String destinationNumber, BigDecimal amount) {
         Account sourceAccount = accountRepositoryPort.findByAccountNumber(sourceNumber)
-                .orElseThrow(() -> new IllegalArgumentException("La cuenta de origen no existe"));
+                .orElseThrow(() -> new IllegalArgumentException("Source account does not exist"));
 
         Account destinationAccount = accountRepositoryPort.findByAccountNumber(destinationNumber)
-                .orElseThrow(() -> new IllegalArgumentException("La cuenta de destino no existe"));
+                .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
 
         sourceAccount.debit(amount);
         destinationAccount.credit(amount);

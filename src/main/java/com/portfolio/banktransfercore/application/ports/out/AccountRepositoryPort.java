@@ -1,6 +1,6 @@
 package com.portfolio.banktransfercore.application.ports.out;
 
-import com.portfolio.banktransfercore.domain.Account;
+import com.portfolio.banktransfercore.domain.account.Account;
 import java.util.Optional;
 import java.util.UUID;
 
