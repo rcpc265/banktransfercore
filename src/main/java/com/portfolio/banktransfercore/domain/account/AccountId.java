@@ -1,4 +1,12 @@
 package com.portfolio.banktransfercore.domain.account;
 
-public record AccountId() {
+import java.util.Objects;
+
+public record AccountId(String value) {
+    public AccountId {
+        Objects.requireNonNull(value, "AccountId cannot be null");
+        if (value.isBlank()) {
+            throw new IllegalArgumentException("AccountId cannot be blank");
+        }
+    }
 }
