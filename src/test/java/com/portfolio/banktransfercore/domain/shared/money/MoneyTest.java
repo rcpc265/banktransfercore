@@ -17,7 +17,7 @@ class MoneyTest {
         @Test
         @DisplayName("Does not allow creating Money with a null amount")
         void givenNullAmount_whenCreatingMoney_thenThrowsException() {
-            var exception = assertThrows(IllegalArgumentException.class,
+            var exception = assertThrows(NullPointerException.class,
                     () -> new Money(null, SupportedCurrency.PEN));
             assertEquals("Amount cannot be null", exception.getMessage());
         }
@@ -25,7 +25,7 @@ class MoneyTest {
         @Test
         @DisplayName("Does not allow creating Money with a null currency")
         void givenNullCurrency_whenCreatingMoney_thenThrowsException() {
-            var exception = assertThrows(IllegalArgumentException.class,
+            var exception = assertThrows(NullPointerException.class,
                     () -> new Money(new BigDecimal("100.00"), null));
             assertEquals("Currency cannot be null", exception.getMessage());
         }
