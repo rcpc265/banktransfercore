@@ -38,6 +38,15 @@ public record Money(BigDecimal amount, SupportedCurrency currency) {
         return this.amount.compareTo(other.amount) > 0;
     }
 
+    public boolean isLessThan(Money other) {
+        ensureSameCurrencyWith(other);
+        return this.amount.compareTo(other.amount) < 0;
+    }
+
+    public boolean isPositive() {
+        return this.amount.compareTo(BigDecimal.ZERO) > 0;
+    }
+
     private void ensureSameCurrencyWith(Money other) {
         if (this.currency != other.currency) {
             throw new CurrencyMismatchException(
