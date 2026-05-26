@@ -1,4 +1,4 @@
-package com.portfolio.banktransfercore.domain;
+package com.portfolio.banktransfercore.domain.transfer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
