@@ -101,4 +101,29 @@ class ProcessTransferServiceTest {
 
         then(accountRepositoryPort).should(never()).save(any(Account.class));
     }
+
+    @Test
+    @DisplayName("Throws exception when source account has insufficient funds")
+    void givenSourceAccountWithInsufficientFunds_whenExecutingTransfer_thenThrowsExceptionAndSavesNothing() {
+        // Given
+        UUID anySourceId = UUID.randomUUID();
+        UUID anyDestinationId = UUID.randomUUID();
+        BigDecimal lowSourceBalance = new BigDecimal("50.00");
+        BigDecimal excessiveTransferAmount = new BigDecimal("100.00");
+
+        Account sourceAccount = new Account(anySourceId, ANY_SOURCE_NUMBER, lowSourceBalance);
+        Account destinationAccount = new Account(anyDestinationId, ANY_DESTINATION_NUMBER, new BigDecimal("200.00"));
+
+        given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
+                .willReturn(Optional.of(sourceAccount));
+        given(accountRepositoryPort.findByAccountNumber(ANY_DESTINATION_NUMBER))
+                .willReturn(Optional.of(destinationAccount));
+
+        // When & Then
+        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, excessiveTransferAmount))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Insufficient funds");
+
+        then(accountRepositoryPort).should(never()).save(any(Account.class));
+    }
 }
