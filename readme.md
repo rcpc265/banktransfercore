@@ -1,41 +1,100 @@
-# Bank Transfer Core
+# Bank Transfer Core 🏦
 
-A clean-architecture, high-performance REST API designed to process internal bank transfers with strict domain isolation and progressive persistence phases. Built to demonstrate corporate engineering standards, resource optimization, and modern software lifecycle management.
+![Java](https://img.shields.io/badge/Java-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-green) ![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-blue) ![Tests](https://img.shields.io/badge/Tests-64%20passing-brightgreen)
 
-## 🚀 Tech Stack & Core Decisions
+A REST API for processing internal bank transfers, built with **Hexagonal Architecture**, immutable **Value Objects**, and financial-grade precision using `BigDecimal`. Demonstrates Domain-Driven Design, automated architectural enforcement with ArchUnit, and modern Java 21 practices.
 
-* **Backend Core:** Java 21 & Spring Boot 3.x.
-* **Concurrency Strategy:** Designed for high-throughput scaling via Java 21's OS-thread detachment capabilities (Virtual Threads optimization roadmap).
-* **Data Precision:** Absolute financial accuracy using `BigDecimal` arithmetic to prevent floating-point calculation errors.
-* **Architecture:** Hexagonal Architecture (Ports & Adapters) ensuring 100% decoupling of core business logic from frameworks and drivers.
+## 🚀 Tech Stack
+
+| Category       | Technology                                     |
+|----------------|------------------------------------------------|
+| Language       | Java 21                                        |
+| Framework      | Spring Boot 3.3                                |
+| Architecture   | Hexagonal (Ports & Adapters)                   |
+| Build          | Maven                                          |
+| Database       | PostgreSQL                                     |
+| Testing        | JUnit 5 + AssertJ + Mockito (BDD) + ArchUnit   |
+| Code Style     | Spotless + Google Java Format                  |
+
+## 🏛️ Hexagonal Architecture
+
+```mermaid
+graph TD
+    subgraph Infrastructure
+        WEB["Web Adapter<br/>(REST Controllers)"]
+        DB["Persistence Adapter<br/>(Spring Data JPA)"]
+    end
+
+    subgraph Application
+        IN["Port In<br/>(TransferUseCase)"]
+        SVC["Service<br/>(ProcessTransferService)"]
+        OUT["Port Out<br/>(AccountRepositoryPort)"]
+    end
+
+    subgraph Domain
+        ENT["Entities<br/>(Account, Transfer)"]
+        VO["Value Objects<br/>(Money, AccountId, AccountNumber)"]
+    end
+
+    WEB -->|implements| IN
+    IN --> SVC
+    SVC --> OUT
+    SVC --> ENT
+    ENT --> VO
+    DB -->|implements| OUT
+```
+
+### ArchUnit Enforcement
+
+Dependency rules are automatically validated via ArchUnit tests:
+
+- Domain **cannot depend** on Infrastructure or Spring Framework.
+- Application **cannot depend** on Spring Framework.
+- Any violation breaks the build.
+
+## 📂 Project Structure
+
+```
+src/main/java/com/portfolio/banktransfercore/
+├── domain/                          # Pure Java — no framework dependencies
+│   ├── account/                     # Account, AccountId, AccountNumber
+│   ├── transfer/                    # Transfer, TransferId
+│   └── shared/money/               # Money, SupportedCurrency
+├── application/                     # Use cases and port interfaces
+│   ├── ports/in/                    # TransferUseCase
+│   ├── ports/out/                   # AccountRepositoryPort
+│   └── services/                   # ProcessTransferService
+└── infrastructure/                  # Spring adapters
+    ├── web/                         # TransferController, TransferRequest
+    └── config/                      # ApplicationConfig
+```
+
+## ⚙️ Getting Started
+
+### Prerequisites
+- Java 21+
+- Maven 3.9+
+
+### Run
+```bash
+git clone https://github.com/rcpc265/banktransfercore.git
+cd banktransfercore
+./mvnw clean compile test
+```
 
 ## 🗺️ Engineering Roadmap
 
-### Phase 1: Core Domain & Operational Skeleton (Current)
-* Implementation of decoupled domain entities (`Account`, `Transfer`) utilizing primitive-free Java validation rules.
-* Automated Schema DDL mapping via Hibernate configuration for rapid delivery and early domain verification.
-* Standardized Input Validation using Jakarta validation constraints.
+### Phase 1: Core Domain & Operational Skeleton ✅
+* Domain entities with rich Value Objects and construction-time validation.
+* Automated DDL via Hibernate for rapid prototyping.
+* Architectural boundary enforcement with ArchUnit.
 
-### Phase 2: Enterprise Persistence & Defensive Locking (In Development)
-* Transition from automated DDL to immutable database version control utilizing **Flyway Migrations**.
-* Implementation of **Pessimistic Locking (`@Lock`)** strategies to guarantee strict data consistency and eliminate race conditions under high concurrent transfer requests.
-* Global Exception Interception via `@RestControllerAdvice` to guarantee clean API contracts and eliminate raw stack traces.
+### Phase 2: Enterprise Persistence & Defensive Locking (In Progress)
+* Flyway Migrations replacing automated DDL.
+* Pessimistic Locking (`@Lock`) for concurrent transfer safety.
+* Global exception handling via `@RestControllerAdvice`.
 
 ### Phase 3: High Availability & QA Verification (Planned)
-* Idempotency layer implementation to handle network retry mechanisms safely.
-* Unit and integration testing coverage with JUnit 5 and Mockito focusing on domain boundary conditions.
-* Load testing execution scripts via Apache JMeter to simulate extreme concurrent stress.
-
-## 🛠️ Architecture Blueprint
-
-```text
-       [ Infrastructure Layer ]
-  (HTTP Controllers / Spring Data JPA)
-               │       ▲
-               ▼       │
-        [ Application Ports ]
-             (Interfaces)
-               │       ▲
-               ▼       │
-        [ Core Domain Layer ]
-          (Pure Java Engines)
+* Idempotency layer for safe network retries.
+* Integration testing coverage expansion.
+* Load testing with Apache JMeter.
