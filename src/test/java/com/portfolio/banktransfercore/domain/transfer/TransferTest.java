@@ -14,11 +14,11 @@ class TransferTest {
   @DisplayName("Does not allow creating a Transfer with an amount equal to zero")
   void givenZeroAmount_whenCreatingTransfer_thenThrowsException() {
     // Given
-    UUID anyId = UUID.randomUUID();
-    String anySourceAccount = "00219112345678901206";
-    String anyDestinationAccount = "98765432101234567819";
-    BigDecimal zeroAmount = new BigDecimal("0.00");
-    LocalDateTime anyDate = LocalDateTime.now();
+    var anyId = UUID.randomUUID();
+    var anySourceAccount = "00219112345678901206";
+    var anyDestinationAccount = "98765432101234567819";
+    var zeroAmount = new BigDecimal("0.00");
+    var anyDate = LocalDateTime.now();
 
     // When & Then
     assertThatThrownBy(
@@ -31,11 +31,11 @@ class TransferTest {
   @DisplayName("Does not allow creating a Transfer with a negative amount")
   void givenNegativeAmount_whenCreatingTransfer_thenThrowsException() {
     // Given
-    UUID anyId = UUID.randomUUID();
-    String anySourceAccount = "00219112345678901206";
-    String anyDestinationAccount = "98765432101234567819";
-    BigDecimal negativeAmount = new BigDecimal("-100.00");
-    LocalDateTime anyDate = LocalDateTime.now();
+    var anyId = UUID.randomUUID();
+    var anySourceAccount = "00219112345678901206";
+    var anyDestinationAccount = "98765432101234567819";
+    var negativeAmount = new BigDecimal("-100.00");
+    var anyDate = LocalDateTime.now();
 
     // When & Then
     assertThatThrownBy(
@@ -50,10 +50,10 @@ class TransferTest {
   @DisplayName("Does not allow creating a Transfer when source and destination are the same")
   void givenSameSourceAndDestination_whenCreatingTransfer_thenThrowsException() {
     // Given
-    UUID anyId = UUID.randomUUID();
-    String sameAccount = "00219112345678901206";
-    BigDecimal validAmount = new BigDecimal("100.00");
-    LocalDateTime anyDate = LocalDateTime.now();
+    var anyId = UUID.randomUUID();
+    var sameAccount = "00219112345678901206";
+    var validAmount = new BigDecimal("100.00");
+    var anyDate = LocalDateTime.now();
 
     // When & Then
     assertThatThrownBy(() -> new Transfer(anyId, sameAccount, sameAccount, validAmount, anyDate))
@@ -65,14 +65,14 @@ class TransferTest {
   @DisplayName("Creates a valid Transfer when all arguments are correct")
   void givenValidArguments_whenCreatingTransfer_thenSuccessful() {
     // Given
-    UUID expectedId = UUID.randomUUID();
-    String expectedSourceAccount = "00219112345678901206";
-    String expectedDestinationAccount = "98765432101234567819";
-    BigDecimal expectedAmount = new BigDecimal("150.50");
-    LocalDateTime expectedDate = LocalDateTime.now();
+    var expectedId = UUID.randomUUID();
+    var expectedSourceAccount = "00219112345678901206";
+    var expectedDestinationAccount = "98765432101234567819";
+    var expectedAmount = new BigDecimal("150.50");
+    var expectedDate = LocalDateTime.now();
 
     // When
-    Transfer transfer =
+    var transfer =
         new Transfer(
             expectedId,
             expectedSourceAccount,

@@ -47,7 +47,7 @@ class AccountNumberTest {
     @DisplayName("Does not allow creating AccountNumber with non-numeric characters")
     void givenNonNumericValue_whenCreatingAccountNumber_thenThrowsException() {
       // Given
-      String nonNumeric = "002191123456789012AA";
+      var nonNumeric = "002191123456789012AA";
 
       // When & Then
       assertThatThrownBy(() -> new AccountNumber(nonNumeric))
