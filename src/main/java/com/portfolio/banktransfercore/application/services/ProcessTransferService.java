@@ -28,7 +28,7 @@ public class ProcessTransferService implements TransferUseCase {
             .findByAccountNumber(destinationNumber)
             .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
 
-    Money transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));
+    var transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));
     sourceAccount.debit(transferMoney);
     destinationAccount.credit(transferMoney);
 

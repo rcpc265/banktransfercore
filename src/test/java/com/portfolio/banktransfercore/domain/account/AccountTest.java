@@ -17,12 +17,12 @@ class AccountTest {
       "Creates an account with accurately populated state when valid initial data is provided")
   void givenValidInitialData_whenCreatingAccount_thenStateIsAccuratelyPopulated() {
     // Given
-    AccountId expectedId = new AccountId(UUID.randomUUID());
-    AccountNumber expectedNumber = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+    var expectedId = new AccountId(UUID.randomUUID());
+    var expectedNumber = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
 
     // When
-    Account account = new Account(expectedId, expectedNumber, initialBalance);
+    var account = new Account(expectedId, expectedNumber, initialBalance);
 
     // Then
     assertThat(account)
@@ -35,13 +35,13 @@ class AccountTest {
   @DisplayName("Decreases the balance accordingly when debiting an account with sufficient funds")
   void givenSufficientFunds_whenDebiting_thenBalanceDecreasesAccordingly() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("500.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("500.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money debitAmount = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
-    Money expectedBalance = new Money(new BigDecimal("300.00"), SupportedCurrency.USD);
+    var debitAmount = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
+    var expectedBalance = new Money(new BigDecimal("300.00"), SupportedCurrency.USD);
 
     // When
     account.debit(debitAmount);
@@ -54,13 +54,13 @@ class AccountTest {
   @DisplayName("Allows debiting the exact balance amount, resulting in a zero balance")
   void givenExactBalanceAmount_whenDebiting_thenBalanceBecomesZero() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money debitAmount = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Money expectedBalance = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+    var debitAmount = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var expectedBalance = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
 
     // When
     account.debit(debitAmount);
@@ -74,12 +74,12 @@ class AccountTest {
       "Throws an IllegalStateException when attempting to debit an account with insufficient funds")
   void givenInsufficientFunds_whenDebiting_thenThrowsIllegalStateException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money debitAmount = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
+    var debitAmount = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
 
     // When / Then
     assertThatThrownBy(() -> account.debit(debitAmount))
@@ -91,12 +91,12 @@ class AccountTest {
   @DisplayName("Throws an IllegalArgumentException when debiting a zero or negative amount")
   void givenZeroOrNegativeAmount_whenDebiting_thenThrowsIllegalArgumentException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+    var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
     // Note: Money record constructor throws IllegalArgumentException if amount < 0,
     // so to test negative amount passing to debit, we would have to bypass Money constructor.
     // We'll test zero amount here.
@@ -111,12 +111,12 @@ class AccountTest {
   @DisplayName("Throws a CurrencyMismatchException when debiting a different currency")
   void givenDifferentCurrency_whenDebiting_thenThrowsCurrencyMismatchException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+    var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
 
     // When / Then
     assertThatThrownBy(() -> account.debit(penAmount))
@@ -129,13 +129,13 @@ class AccountTest {
   @DisplayName("Increases the balance accordingly when crediting an account with a valid amount")
   void givenValidAmount_whenCrediting_thenBalanceIncreasesAccordingly() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money creditAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.USD);
-    Money expectedBalance = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
+    var creditAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.USD);
+    var expectedBalance = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
 
     // When
     account.credit(creditAmount);
@@ -148,12 +148,12 @@ class AccountTest {
   @DisplayName("Throws an IllegalArgumentException when crediting a zero amount")
   void givenZeroAmount_whenCrediting_thenThrowsIllegalArgumentException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+    var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
 
     // When / Then
     assertThatThrownBy(() -> account.credit(zeroAmount))
@@ -165,12 +165,12 @@ class AccountTest {
   @DisplayName("Throws a CurrencyMismatchException when crediting a different currency")
   void givenDifferentCurrency_whenCrediting_thenThrowsCurrencyMismatchException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    Money penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+    var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
 
     // When / Then
     assertThatThrownBy(() -> account.credit(penAmount))
@@ -183,8 +183,8 @@ class AccountTest {
   @DisplayName("Throws a NullPointerException when creating an account with a null ID")
   void givenNullAccountId_whenCreatingAccount_thenThrowsNullPointerException() {
     // Given
-    AccountNumber expectedNumber = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+    var expectedNumber = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
 
     // When / Then
     assertThatThrownBy(() -> new Account(null, expectedNumber, initialBalance))
@@ -196,8 +196,8 @@ class AccountTest {
   @DisplayName("Throws a NullPointerException when creating an account with a null account number")
   void givenNullAccountNumber_whenCreatingAccount_thenThrowsNullPointerException() {
     // Given
-    AccountId expectedId = new AccountId(UUID.randomUUID());
-    Money initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+    var expectedId = new AccountId(UUID.randomUUID());
+    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
 
     // When / Then
     assertThatThrownBy(() -> new Account(expectedId, null, initialBalance))
@@ -209,8 +209,8 @@ class AccountTest {
   @DisplayName("Throws a NullPointerException when creating an account with a null balance")
   void givenNullBalance_whenCreatingAccount_thenThrowsNullPointerException() {
     // Given
-    AccountId expectedId = new AccountId(UUID.randomUUID());
-    AccountNumber expectedNumber = new AccountNumber("00219112345678901206");
+    var expectedId = new AccountId(UUID.randomUUID());
+    var expectedNumber = new AccountNumber("00219112345678901206");
 
     // When / Then
     assertThatThrownBy(() -> new Account(expectedId, expectedNumber, null))
@@ -222,10 +222,10 @@ class AccountTest {
   @DisplayName("Throws a NullPointerException when debiting a null amount")
   void givenNullAmount_whenDebiting_thenThrowsNullPointerException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
     // When / Then
     assertThatThrownBy(() -> account.debit(null))
@@ -237,10 +237,10 @@ class AccountTest {
   @DisplayName("Throws a NullPointerException when crediting a null amount")
   void givenNullAmount_whenCrediting_thenThrowsNullPointerException() {
     // Given
-    AccountId ANY_ID = new AccountId(UUID.randomUUID());
-    AccountNumber ANY_NUMBER = new AccountNumber("00219112345678901206");
-    Money initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    Account account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    var ANY_ID = new AccountId(UUID.randomUUID());
+    var ANY_NUMBER = new AccountNumber("00219112345678901206");
+    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
     // When / Then
     assertThatThrownBy(() -> account.credit(null))
