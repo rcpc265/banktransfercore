@@ -31,19 +31,20 @@ class TransferControllerTest {
     @Test
     @DisplayName("When valid transfer request is POSTed, then returns 200 OK and executes use case")
     void givenValidRequest_whenPostingTransfer_thenReturns200Ok() throws Exception {
-        // Given
-        String sourceNumber = "00219112345678901206";
-        String destinationNumber = "98765432101234567819";
-        BigDecimal amount = new BigDecimal("150.00");
-        TransferRequest request = new TransferRequest(sourceNumber, destinationNumber, amount);
+        // Given: Una solicitud de transferencia válida con monto y moneda
+        var sourceNumber = "00219112345678901206";
+        var destinationNumber = "98765432101234567819";
+        var amount = new BigDecimal("150.00");
+        var currency = "USD";
+        var request = new TransferRequest(sourceNumber, destinationNumber, amount, currency);
 
-        // When
+        // When: Se recibe el POST en el endpoint de transferencias
         mockMvc.perform(post("/api/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                // Then
+                // Then: El controlador delega al puerto de entrada y responde HTTP 200
                 .andExpect(status().isOk());
 
-        then(transferUseCase).should().execute(sourceNumber, destinationNumber, amount);
+        then(transferUseCase).should().execute(sourceNumber, destinationNumber, amount, currency);
     }
 }
