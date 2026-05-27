@@ -32,10 +32,11 @@ class TransferControllerTest {
     @DisplayName("When valid transfer request is POSTed, then returns 200 OK and executes use case")
     void givenValidRequest_whenPostingTransfer_thenReturns200Ok() throws Exception {
         // Given
-        String sourceNumber = "00219112345678901206";
-        String destinationNumber = "98765432101234567819";
-        BigDecimal amount = new BigDecimal("150.00");
-        TransferRequest request = new TransferRequest(sourceNumber, destinationNumber, amount);
+        var sourceNumber = "00219112345678901206";
+        var destinationNumber = "98765432101234567819";
+        var amount = new BigDecimal("150.00");
+        var currency = "USD";
+        var request = new TransferRequest(sourceNumber, destinationNumber, amount, currency);
 
         // When
         mockMvc.perform(post("/api/transfers")
@@ -44,6 +45,6 @@ class TransferControllerTest {
                 // Then
                 .andExpect(status().isOk());
 
-        then(transferUseCase).should().execute(sourceNumber, destinationNumber, amount);
+        then(transferUseCase).should().execute(sourceNumber, destinationNumber, amount, currency);
     }
 }

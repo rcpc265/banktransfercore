@@ -1,43 +1,46 @@
 package com.portfolio.banktransfercore.domain.account;
 
-import java.math.BigDecimal;
+import com.portfolio.banktransfercore.domain.shared.money.Money;
+
 import java.util.Objects;
-import java.util.UUID;
 
 public class Account {
-    private final UUID id;
-    private final String accountNumber;
-    private BigDecimal balance;
+    private final AccountId id;
+    private final AccountNumber accountNumber;
+    private Money balance;
 
-    public Account(UUID id, String accountNumber, BigDecimal balance) {
+    public Account(AccountId id, AccountNumber accountNumber, Money balance) {
         this.id = Objects.requireNonNull(id, "Account ID cannot be null");
         this.accountNumber = Objects.requireNonNull(accountNumber, "Account number cannot be null");
-
-        if (balance == null || balance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Initial balance cannot be negative");
-        }
-        this.balance = balance;
+        this.balance = Objects.requireNonNull(balance, "Initial balance cannot be null");
     }
 
-    public void debit(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
-        }
-        if (this.balance.compareTo(amount) < 0) {
+    public void debit(Money amount) {
+        requireValidTransactionAmount(amount, "Debit amount must be greater than zero");
+
+        if (this.balance.isLessThan(amount)) {
             throw new IllegalStateException("Insufficient funds");
         }
+
         this.balance = this.balance.subtract(amount);
     }
 
-    public void credit(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
-        }
+    public void credit(Money amount) {
+        requireValidTransactionAmount(amount, "Credit amount must be greater than zero");
+
         this.balance = this.balance.add(amount);
     }
 
-    public UUID getId() { return id; }
-    public String getAccountNumber() { return accountNumber; }
-    public BigDecimal getBalance() { return balance; }
+    private void requireValidTransactionAmount(Money amount, String errorMessage) {
+        Objects.requireNonNull(amount, "Transaction amount cannot be null");
+
+        if (!amount.isPositive()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    public AccountId getId() { return id; }
+    public AccountNumber getAccountNumber() { return accountNumber; }
+    public Money getBalance() { return balance; }
 }
 
