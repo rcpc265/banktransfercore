@@ -1,60 +1,79 @@
 package com.portfolio.banktransfercore.domain.account;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.*;
 
 class AccountIdTest {
 
-    @Test
-    @DisplayName("Given valid string, when created, then successful")
-    void givenValidString_whenConstructing_thenCreatesSuccessfully() {
-        // Given
-        String rawId = "ACC-123";
+    @Nested
+    @DisplayName("Creation and Validation Rules")
+    class CreationAndValidationRules {
 
-        // When
-        AccountId accountId = new AccountId(rawId);
+        @Test
+        @DisplayName("Does not allow creating AccountId with a null value")
+        void givenNullValue_whenCreatingAccountId_thenThrowsException() {
+            // When & Then
+            assertThatThrownBy(() -> new AccountId(null))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("AccountId cannot be null");
+        }
 
-        // Then
-        assertThat(accountId.value()).isEqualTo(rawId);
+        @Test
+        @DisplayName("Successfully creates AccountId with a valid UUID")
+        void givenValidUUID_whenConstructing_thenCreatesSuccessfully() {
+            // Given
+            var rawId = UUID.randomUUID();
+
+            // When
+            var accountId = new AccountId(rawId);
+
+            // Then
+            assertThat(accountId.value()).isEqualTo(rawId);
+        }
     }
 
-    @Test
-    @DisplayName("Given null value, when created, then throws exception")
-    void givenNullValue_whenConstructing_thenThrowsNullPointerException() {
-        // Given
-        String rawId = null;
+    @Nested
+    @DisplayName("Equality and Identity (Value Object Rules)")
+    class Equality {
 
-        // When / Then
-        assertThatThrownBy(() -> new AccountId(rawId))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("AccountId cannot be null");
-    }
+        @Test
+        @DisplayName("Two AccountId objects with the same UUID are equal")
+        void givenTwoEqualValues_whenCompared_thenAreEquals() {
+            // Given
+            var uuid = UUID.randomUUID();
+            var id1 = new AccountId(uuid);
+            var id2 = new AccountId(uuid);
 
-    @Test
-    @DisplayName("Given blank value, when created, then throws exception")
-    void givenBlankValue_whenConstructing_thenThrowsIllegalArgumentException() {
-        // Given
-        String rawId = "   ";
+            // When & Then
+            assertThat(id1).isEqualTo(id2);
+        }
 
-        // When / Then
-        assertThatThrownBy(() -> new AccountId(rawId))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("AccountId cannot be blank");
-    }
+        @Test
+        @DisplayName("Two AccountId objects with the same UUID have identical hash codes")
+        void givenSameValue_whenCheckingHashCode_thenHashCodesMatch() {
+            // Given
+            var uuid = UUID.randomUUID();
+            var id1 = new AccountId(uuid);
+            var id2 = new AccountId(uuid);
 
-    @Test
-    @DisplayName("Given two equal values, when compared, then they are equivalent")
-    void givenTwoEqualValues_whenCompared_thenTheyAreEquivalent() {
-        // Given
-        AccountId id1 = new AccountId("ID-1");
-        AccountId id2 = new AccountId("ID-1");
+            // When & Then
+            assertThat(id1.hashCode()).isEqualTo(id2.hashCode());
+        }
 
-        // When
-        boolean areEqual = id1.equals(id2);
+        @Test
+        @DisplayName("Two AccountId objects with different UUIDs are not equal")
+        void givenDifferentValues_whenCompared_thenAreNotEquals() {
+            // Given
+            var id1 = new AccountId(UUID.randomUUID());
+            var id2 = new AccountId(UUID.randomUUID());
 
-        // Then
-        assertThat(areEqual).isTrue();
-        assertThat(id1.hashCode()).isEqualTo(id2.hashCode());
+            // When & Then
+            assertThat(id1).isNotEqualTo(id2);
+        }
     }
 }
