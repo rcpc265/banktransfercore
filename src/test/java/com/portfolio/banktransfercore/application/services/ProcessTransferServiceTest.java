@@ -2,6 +2,10 @@ package com.portfolio.banktransfercore.application.services;
 
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
 import com.portfolio.banktransfercore.domain.account.Account;
+import com.portfolio.banktransfercore.domain.account.AccountId;
+import com.portfolio.banktransfercore.domain.account.AccountNumber;
+import com.portfolio.banktransfercore.domain.shared.money.Money;
+import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,14 +40,14 @@ class ProcessTransferServiceTest {
     @DisplayName("Executes a successful transfer between two existing accounts")
     void givenValidAccountsAndFunds_whenExecutingTransfer_thenBalancesAreUpdatedAndSaved() {
         // Given
-        UUID anySourceId = UUID.randomUUID();
-        UUID anyDestinationId = UUID.randomUUID();
-        BigDecimal initialSourceBalance = new BigDecimal("500.00");
-        BigDecimal initialDestinationBalance = new BigDecimal("100.00");
-        BigDecimal transferAmount = new BigDecimal("200.00");
+        var anySourceId = UUID.randomUUID().toString();
+        var anyDestinationId = UUID.randomUUID().toString();
+        var initialSourceBalance = Money.of("500.00", SupportedCurrency.USD);
+        var initialDestinationBalance = Money.of("100.00", SupportedCurrency.USD);
+        var transferAmount = new BigDecimal("200.00");
 
-        Account sourceAccount = new Account(anySourceId, ANY_SOURCE_NUMBER, initialSourceBalance);
-        Account destinationAccount = new Account(anyDestinationId, ANY_DESTINATION_NUMBER, initialDestinationBalance);
+        var sourceAccount = new Account(new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), initialSourceBalance);
+        var destinationAccount = new Account(new AccountId(anyDestinationId), new AccountNumber(ANY_DESTINATION_NUMBER), initialDestinationBalance);
 
         given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
                 .willReturn(Optional.of(sourceAccount));
@@ -51,14 +55,14 @@ class ProcessTransferServiceTest {
                 .willReturn(Optional.of(destinationAccount));
 
         // When
-        transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, transferAmount);
+        transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, transferAmount, "USD");
 
         // Then
-        BigDecimal expectedSourceBalance = new BigDecimal("300.00");
-        BigDecimal expectedDestinationBalance = new BigDecimal("300.00");
+        var expectedSourceBalance = Money.of("300.00", SupportedCurrency.USD);
+        var expectedDestinationBalance = Money.of("300.00", SupportedCurrency.USD);
 
-        assertThat(sourceAccount.getBalance()).isEqualByComparingTo(expectedSourceBalance);
-        assertThat(destinationAccount.getBalance()).isEqualByComparingTo(expectedDestinationBalance);
+        assertThat(sourceAccount.getBalance()).isEqualTo(expectedSourceBalance);
+        assertThat(destinationAccount.getBalance()).isEqualTo(expectedDestinationBalance);
 
         then(accountRepositoryPort).should().save(sourceAccount);
         then(accountRepositoryPort).should().save(destinationAccount);
@@ -68,13 +72,13 @@ class ProcessTransferServiceTest {
     @DisplayName("Throws exception when source account does not exist")
     void givenMissingSourceAccount_whenExecutingTransfer_thenThrowsException() {
         // Given
-        BigDecimal anyAmount = new BigDecimal("100.00");
+        var anyAmount = new BigDecimal("100.00");
 
         given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
                 .willReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, anyAmount))
+        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, anyAmount, "USD"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Source account does not exist");
 
@@ -85,9 +89,10 @@ class ProcessTransferServiceTest {
     @DisplayName("Throws exception when destination account does not exist")
     void givenMissingDestinationAccount_whenExecutingTransfer_thenThrowsException() {
         // Given
-        UUID anySourceId = UUID.randomUUID();
-        BigDecimal anyAmount = new BigDecimal("100.00");
-        Account sourceAccount = new Account(anySourceId, ANY_SOURCE_NUMBER, new BigDecimal("500.00"));
+        var anySourceId = UUID.randomUUID().toString();
+        var anyAmount = new BigDecimal("100.00");
+        var initialBalance = Money.of("500.00", SupportedCurrency.USD);
+        var sourceAccount = new Account(new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), initialBalance);
 
         given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
                 .willReturn(Optional.of(sourceAccount));
@@ -95,7 +100,7 @@ class ProcessTransferServiceTest {
                 .willReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, anyAmount))
+        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, anyAmount, "USD"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Destination account does not exist");
 
@@ -106,13 +111,13 @@ class ProcessTransferServiceTest {
     @DisplayName("Throws exception when source account has insufficient funds")
     void givenSourceAccountWithInsufficientFunds_whenExecutingTransfer_thenThrowsExceptionAndSavesNothing() {
         // Given
-        UUID anySourceId = UUID.randomUUID();
-        UUID anyDestinationId = UUID.randomUUID();
-        BigDecimal lowSourceBalance = new BigDecimal("50.00");
-        BigDecimal excessiveTransferAmount = new BigDecimal("100.00");
+        var anySourceId = UUID.randomUUID().toString();
+        var anyDestinationId = UUID.randomUUID().toString();
+        var lowSourceBalance = Money.of("50.00", SupportedCurrency.USD);
+        var excessiveTransferAmount = new BigDecimal("100.00");
 
-        Account sourceAccount = new Account(anySourceId, ANY_SOURCE_NUMBER, lowSourceBalance);
-        Account destinationAccount = new Account(anyDestinationId, ANY_DESTINATION_NUMBER, new BigDecimal("200.00"));
+        var sourceAccount = new Account(new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), lowSourceBalance);
+        var destinationAccount = new Account(new AccountId(anyDestinationId), new AccountNumber(ANY_DESTINATION_NUMBER), Money.of("200.00", SupportedCurrency.USD));
 
         given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
                 .willReturn(Optional.of(sourceAccount));
@@ -120,7 +125,7 @@ class ProcessTransferServiceTest {
                 .willReturn(Optional.of(destinationAccount));
 
         // When & Then
-        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, excessiveTransferAmount))
+        assertThatThrownBy(() -> transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, excessiveTransferAmount, "USD"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Insufficient funds");
 

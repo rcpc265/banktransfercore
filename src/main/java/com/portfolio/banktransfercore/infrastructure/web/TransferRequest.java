@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 public record TransferRequest(
         String sourceNumber,
         String destinationNumber,
-        BigDecimal amount
+        BigDecimal amount,
+        String currency
 ) {}
