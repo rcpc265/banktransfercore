@@ -10,21 +10,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/transfers")
 public class TransferController {
-    private final TransferUseCase transferUseCase;
+  private final TransferUseCase transferUseCase;
 
-    public TransferController(TransferUseCase transferUseCase) {
-        this.transferUseCase = transferUseCase;
-    }
+  public TransferController(TransferUseCase transferUseCase) {
+    this.transferUseCase = transferUseCase;
+  }
 
-    @PostMapping
-    public ResponseEntity<Void> transfer(@RequestBody TransferRequest request) {
-        transferUseCase.execute(
-                request.sourceNumber(),
-                request.destinationNumber(),
-                request.amount(),
-                request.currency()
-        );
+  @PostMapping
+  public ResponseEntity<Void> transfer(@RequestBody TransferRequest request) {
+    transferUseCase.execute(
+        request.sourceNumber(), request.destinationNumber(), request.amount(), request.currency());
 
-        return ResponseEntity.ok().build();
-    }
+    return ResponseEntity.ok().build();
+  }
 }
