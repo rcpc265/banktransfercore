@@ -21,7 +21,8 @@ public class TransferController {
         transferUseCase.execute(
                 request.sourceNumber(),
                 request.destinationNumber(),
-                request.amount()
+                request.amount(),
+                request.currency()
         );
 
         return ResponseEntity.ok().build();
