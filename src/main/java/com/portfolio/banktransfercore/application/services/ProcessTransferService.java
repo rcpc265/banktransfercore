@@ -9,29 +9,30 @@ import java.math.BigDecimal;
 
 public class ProcessTransferService implements TransferUseCase {
 
-    private final AccountRepositoryPort accountRepositoryPort;
-    public ProcessTransferService(AccountRepositoryPort accountRepositoryPort) {
-        this.accountRepositoryPort = accountRepositoryPort;
-    }
+  private final AccountRepositoryPort accountRepositoryPort;
 
-    @Override
-    public void execute(
-            String sourceNumber,
-            String destinationNumber,
-            BigDecimal amount,
-            String currency
-    ) {
-        Account sourceAccount = accountRepositoryPort.findByAccountNumber(sourceNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Source account does not exist"));
+  public ProcessTransferService(AccountRepositoryPort accountRepositoryPort) {
+    this.accountRepositoryPort = accountRepositoryPort;
+  }
 
-        Account destinationAccount = accountRepositoryPort.findByAccountNumber(destinationNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
+  @Override
+  public void execute(
+      String sourceNumber, String destinationNumber, BigDecimal amount, String currency) {
+    Account sourceAccount =
+        accountRepositoryPort
+            .findByAccountNumber(sourceNumber)
+            .orElseThrow(() -> new IllegalArgumentException("Source account does not exist"));
 
-        Money transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));
-        sourceAccount.debit(transferMoney);
-        destinationAccount.credit(transferMoney);
+    Account destinationAccount =
+        accountRepositoryPort
+            .findByAccountNumber(destinationNumber)
+            .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
 
-        accountRepositoryPort.save(sourceAccount);
-        accountRepositoryPort.save(destinationAccount);
-    }
+    Money transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));
+    sourceAccount.debit(transferMoney);
+    destinationAccount.credit(transferMoney);
+
+    accountRepositoryPort.save(sourceAccount);
+    accountRepositoryPort.save(destinationAccount);
+  }
 }
