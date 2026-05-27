@@ -40,8 +40,8 @@ class ProcessTransferServiceTest {
     @DisplayName("Executes a successful transfer between two existing accounts")
     void givenValidAccountsAndFunds_whenExecutingTransfer_thenBalancesAreUpdatedAndSaved() {
         // Given
-        var anySourceId = UUID.randomUUID().toString();
-        var anyDestinationId = UUID.randomUUID().toString();
+        var anySourceId = UUID.randomUUID();
+        var anyDestinationId = UUID.randomUUID();
         var initialSourceBalance = Money.of("500.00", SupportedCurrency.USD);
         var initialDestinationBalance = Money.of("100.00", SupportedCurrency.USD);
         var transferAmount = new BigDecimal("200.00");
@@ -89,7 +89,7 @@ class ProcessTransferServiceTest {
     @DisplayName("Throws exception when destination account does not exist")
     void givenMissingDestinationAccount_whenExecutingTransfer_thenThrowsException() {
         // Given
-        var anySourceId = UUID.randomUUID().toString();
+        var anySourceId = UUID.randomUUID();
         var anyAmount = new BigDecimal("100.00");
         var initialBalance = Money.of("500.00", SupportedCurrency.USD);
         var sourceAccount = new Account(new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), initialBalance);
@@ -111,8 +111,8 @@ class ProcessTransferServiceTest {
     @DisplayName("Throws exception when source account has insufficient funds")
     void givenSourceAccountWithInsufficientFunds_whenExecutingTransfer_thenThrowsExceptionAndSavesNothing() {
         // Given
-        var anySourceId = UUID.randomUUID().toString();
-        var anyDestinationId = UUID.randomUUID().toString();
+        var anySourceId = UUID.randomUUID();
+        var anyDestinationId = UUID.randomUUID();
         var lowSourceBalance = Money.of("50.00", SupportedCurrency.USD);
         var excessiveTransferAmount = new BigDecimal("100.00");
 
