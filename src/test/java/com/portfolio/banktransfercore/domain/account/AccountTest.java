@@ -247,4 +247,160 @@ class AccountTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("Transaction amount cannot be null");
   }
+
+  // --- State Transitions Tests ---
+
+  @Test
+  @DisplayName("Under investigation account blocks debit but allows credit")
+  void givenUnderInvestigationAccount_whenTransacting_thenOnlyCreditIsAllowed() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.investigate();
+
+    // When / Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.UNDER_INVESTIGATION);
+
+    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot debit money");
+
+    // Credit should succeed
+    account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD));
+    assertThat(account.getBalance())
+        .isEqualTo(new Money(new BigDecimal("150"), SupportedCurrency.USD));
+  }
+
+  @Test
+  @DisplayName("Frozen account blocks both debit and credit")
+  void givenFrozenAccount_whenTransacting_thenBothAreBlocked() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.freeze();
+
+    // When / Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.FROZEN);
+
+    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot debit money");
+
+    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot credit money");
+  }
+
+  @Test
+  @DisplayName("Dormant account blocks both debit and credit")
+  void givenDormantAccount_whenTransacting_thenBothAreBlocked() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.markDormant();
+
+    // When / Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.DORMANT);
+
+    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot debit money");
+
+    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot credit money");
+  }
+
+  @Test
+  @DisplayName("Closed account blocks everything and rejects all transitions")
+  void givenClosedAccount_whenTransacting_thenEverythingIsBlocked() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.close();
+
+    // When / Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.CLOSED);
+
+    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot debit money");
+
+    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot credit money");
+
+    assertThatThrownBy(() -> account.freeze())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot freeze account from CLOSED");
+
+    assertThatThrownBy(() -> account.reactivate())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot reactivate account from CLOSED");
+  }
+
+  @Test
+  @DisplayName("Frozen account cannot be investigated (invalid transition)")
+  void givenFrozenAccount_whenInvestigating_thenTransitionIsRejected() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.freeze();
+
+    // When / Then
+    assertThatThrownBy(() -> account.investigate())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot investigate account from FROZEN");
+  }
+
+  @Test
+  @DisplayName("Frozen account can be reactivated back to active")
+  void givenFrozenAccount_whenReactivating_thenStatusBecomesActive() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.freeze();
+
+    // When
+    account.reactivate();
+
+    // Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+  }
+
+  @Test
+  @DisplayName("Dormant account can be reactivated back to active")
+  void givenDormantAccount_whenReactivating_thenStatusBecomesActive() {
+    // Given
+    var account =
+        new Account(
+            new AccountId(UUID.randomUUID()),
+            new AccountNumber("00219112345678901206"),
+            new Money(new BigDecimal("100"), SupportedCurrency.USD));
+    account.markDormant();
+
+    // When
+    account.reactivate();
+
+    // Then
+    assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+  }
 }

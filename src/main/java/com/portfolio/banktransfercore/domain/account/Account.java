@@ -7,6 +7,7 @@ public class Account {
   private final AccountId id;
   private final AccountNumber accountNumber;
   private Money balance;
+  private AccountStatus status = AccountStatus.ACTIVE;
 
   public Account(AccountId id, AccountNumber accountNumber, Money balance) {
     this.id = Objects.requireNonNull(id, "Account ID cannot be null");
@@ -15,6 +16,7 @@ public class Account {
   }
 
   public void debit(Money amount) {
+    this.status.validateDebit(amount);
     requireValidTransactionAmount(amount, "Debit amount must be greater than zero");
 
     if (this.balance.isLessThan(amount)) {
@@ -25,6 +27,7 @@ public class Account {
   }
 
   public void credit(Money amount) {
+    this.status.validateCredit(amount);
     requireValidTransactionAmount(amount, "Credit amount must be greater than zero");
 
     this.balance = this.balance.add(amount);
@@ -48,5 +51,31 @@ public class Account {
 
   public Money getBalance() {
     return balance;
+  }
+
+  public AccountStatus getStatus() {
+    return status;
+  }
+
+  // --- State Transitions (delegated to AccountStatus) ---
+
+  public void investigate() {
+    this.status = this.status.onInvestigate();
+  }
+
+  public void freeze() {
+    this.status = this.status.onFreeze();
+  }
+
+  public void close() {
+    this.status = this.status.onClose();
+  }
+
+  public void reactivate() {
+    this.status = this.status.onReactivate();
+  }
+
+  public void markDormant() {
+    this.status = this.status.onMarkDormant();
   }
 }
