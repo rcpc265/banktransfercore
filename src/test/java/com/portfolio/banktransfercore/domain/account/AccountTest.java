@@ -8,399 +8,419 @@ import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class AccountTest {
 
-  @Test
-  @DisplayName(
-      "Creates an account with accurately populated state when valid initial data is provided")
-  void givenValidInitialData_whenCreatingAccount_thenStateIsAccuratelyPopulated() {
-    // Given
-    var expectedId = new AccountId(UUID.randomUUID());
-    var expectedNumber = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+  @Nested
+  @DisplayName("Account Creation")
+  class AccountCreation {
 
-    // When
-    var account = new Account(expectedId, expectedNumber, initialBalance);
+    @Test
+    @DisplayName(
+        "Creates an account with accurately populated state when valid initial data is provided")
+    void givenValidInitialData_whenCreatingAccount_thenStateIsAccuratelyPopulated() {
+      // Given
+      var expectedId = new AccountId(UUID.randomUUID());
+      var expectedNumber = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
 
-    // Then
-    assertThat(account)
-        .returns(expectedId, Account::getId)
-        .returns(expectedNumber, Account::getAccountNumber)
-        .returns(initialBalance, Account::getBalance);
+      // When
+      var account = new Account(expectedId, expectedNumber, initialBalance);
+
+      // Then
+      assertThat(account)
+          .returns(expectedId, Account::getId)
+          .returns(expectedNumber, Account::getAccountNumber)
+          .returns(initialBalance, Account::getBalance);
+    }
+
+    @Test
+    @DisplayName("Throws a NullPointerException when creating an account with a null ID")
+    void givenNullAccountId_whenCreatingAccount_thenThrowsNullPointerException() {
+      // Given
+      var expectedNumber = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+
+      // When / Then
+      assertThatThrownBy(() -> new Account(null, expectedNumber, initialBalance))
+          .isInstanceOf(NullPointerException.class)
+          .hasMessage("Account ID cannot be null");
+    }
+
+    @Test
+    @DisplayName(
+        "Throws a NullPointerException when creating an account with a null account number")
+    void givenNullAccountNumber_whenCreatingAccount_thenThrowsNullPointerException() {
+      // Given
+      var expectedId = new AccountId(UUID.randomUUID());
+      var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+
+      // When / Then
+      assertThatThrownBy(() -> new Account(expectedId, null, initialBalance))
+          .isInstanceOf(NullPointerException.class)
+          .hasMessage("Account number cannot be null");
+    }
+
+    @Test
+    @DisplayName("Throws a NullPointerException when creating an account with a null balance")
+    void givenNullBalance_whenCreatingAccount_thenThrowsNullPointerException() {
+      // Given
+      var expectedId = new AccountId(UUID.randomUUID());
+      var expectedNumber = new AccountNumber("00219112345678901206");
+
+      // When / Then
+      assertThatThrownBy(() -> new Account(expectedId, expectedNumber, null))
+          .isInstanceOf(NullPointerException.class)
+          .hasMessage("Initial balance cannot be null");
+    }
   }
 
-  @Test
-  @DisplayName("Decreases the balance accordingly when debiting an account with sufficient funds")
-  void givenSufficientFunds_whenDebiting_thenBalanceDecreasesAccordingly() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("500.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+  @Nested
+  @DisplayName("Financial Operations")
+  class FinancialOperations {
 
-    var debitAmount = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
-    var expectedBalance = new Money(new BigDecimal("300.00"), SupportedCurrency.USD);
+    @Test
+    @DisplayName("Decreases the balance accordingly when debiting an account with sufficient funds")
+    void givenSufficientFunds_whenDebiting_thenBalanceDecreasesAccordingly() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("500.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
 
-    // When
-    account.debit(debitAmount);
+      var debitAmount = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
+      var expectedBalance = new Money(new BigDecimal("300.00"), SupportedCurrency.USD);
 
-    // Then
-    assertThat(account.getBalance()).isEqualTo(expectedBalance);
+      // When
+      account.debit(debitAmount);
+
+      // Then
+      assertThat(account.getBalance()).isEqualTo(expectedBalance);
+    }
+
+    @Test
+    @DisplayName("Allows debiting the exact balance amount, resulting in a zero balance")
+    void givenExactBalanceAmount_whenDebiting_thenBalanceBecomesZero() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var debitAmount = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var expectedBalance = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+
+      // When
+      account.debit(debitAmount);
+
+      // Then
+      assertThat(account.getBalance()).isEqualTo(expectedBalance);
+    }
+
+    @Test
+    @DisplayName(
+        "Throws an IllegalStateException when attempting to debit an account with insufficient"
+            + " funds")
+    void givenInsufficientFunds_whenDebiting_thenThrowsIllegalStateException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var debitAmount = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
+
+      // When / Then
+      assertThatThrownBy(() -> account.debit(debitAmount))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessage("Insufficient funds");
+    }
+
+    @Test
+    @DisplayName("Throws an IllegalArgumentException when debiting a zero or negative amount")
+    void givenZeroOrNegativeAmount_whenDebiting_thenThrowsIllegalArgumentException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+
+      // When / Then
+      assertThatThrownBy(() -> account.debit(zeroAmount))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Debit amount must be greater than zero");
+    }
+
+    @Test
+    @DisplayName("Throws a CurrencyMismatchException when debiting a different currency")
+    void givenDifferentCurrency_whenDebiting_thenThrowsCurrencyMismatchException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+
+      // When / Then
+      assertThatThrownBy(() -> account.debit(penAmount))
+          .isInstanceOf(
+              com.portfolio.banktransfercore.domain.shared.money.CurrencyMismatchException.class)
+          .hasMessageContaining("Cannot operate on different currencies");
+    }
+
+    @Test
+    @DisplayName("Throws a NullPointerException when debiting a null amount")
+    void givenNullAmount_whenDebiting_thenThrowsNullPointerException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      // When / Then
+      assertThatThrownBy(() -> account.debit(null))
+          .isInstanceOf(NullPointerException.class)
+          .hasMessage("Transaction amount cannot be null");
+    }
+
+    @Test
+    @DisplayName("Increases the balance accordingly when crediting an account with a valid amount")
+    void givenValidAmount_whenCrediting_thenBalanceIncreasesAccordingly() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var creditAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.USD);
+      var expectedBalance = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
+
+      // When
+      account.credit(creditAmount);
+
+      // Then
+      assertThat(account.getBalance()).isEqualTo(expectedBalance);
+    }
+
+    @Test
+    @DisplayName("Throws an IllegalArgumentException when crediting a zero amount")
+    void givenZeroAmount_whenCrediting_thenThrowsIllegalArgumentException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+
+      // When / Then
+      assertThatThrownBy(() -> account.credit(zeroAmount))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Credit amount must be greater than zero");
+    }
+
+    @Test
+    @DisplayName("Throws a CurrencyMismatchException when crediting a different currency")
+    void givenDifferentCurrency_whenCrediting_thenThrowsCurrencyMismatchException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+
+      // When / Then
+      assertThatThrownBy(() -> account.credit(penAmount))
+          .isInstanceOf(
+              com.portfolio.banktransfercore.domain.shared.money.CurrencyMismatchException.class)
+          .hasMessageContaining("Cannot operate on different currencies");
+    }
+
+    @Test
+    @DisplayName("Throws a NullPointerException when crediting a null amount")
+    void givenNullAmount_whenCrediting_thenThrowsNullPointerException() {
+      // Given
+      var ANY_ID = new AccountId(UUID.randomUUID());
+      var ANY_NUMBER = new AccountNumber("00219112345678901206");
+      var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
+      var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+
+      // When / Then
+      assertThatThrownBy(() -> account.credit(null))
+          .isInstanceOf(NullPointerException.class)
+          .hasMessage("Transaction amount cannot be null");
+    }
   }
 
-  @Test
-  @DisplayName("Allows debiting the exact balance amount, resulting in a zero balance")
-  void givenExactBalanceAmount_whenDebiting_thenBalanceBecomesZero() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+  @Nested
+  @DisplayName("Account Lifecycle")
+  class AccountLifecycle {
 
-    var debitAmount = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var expectedBalance = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+    @Test
+    @DisplayName("Under investigation account blocks debit but allows credit")
+    void givenUnderInvestigationAccount_whenTransacting_thenOnlyCreditIsAllowed() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.investigate();
 
-    // When
-    account.debit(debitAmount);
+      // When / Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.UNDER_INVESTIGATION);
 
-    // Then
-    assertThat(account.getBalance()).isEqualTo(expectedBalance);
-  }
+      assertThatThrownBy(
+              () -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot debit money");
 
-  @Test
-  @DisplayName(
-      "Throws an IllegalStateException when attempting to debit an account with insufficient funds")
-  void givenInsufficientFunds_whenDebiting_thenThrowsIllegalStateException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+      // Credit should succeed
+      account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD));
+      assertThat(account.getBalance())
+          .isEqualTo(new Money(new BigDecimal("150"), SupportedCurrency.USD));
+    }
 
-    var debitAmount = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
+    @Test
+    @DisplayName("Frozen account blocks both debit and credit")
+    void givenFrozenAccount_whenTransacting_thenBothAreBlocked() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.freeze();
 
-    // When / Then
-    assertThatThrownBy(() -> account.debit(debitAmount))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Insufficient funds");
-  }
+      // When / Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.FROZEN);
 
-  @Test
-  @DisplayName("Throws an IllegalArgumentException when debiting a zero or negative amount")
-  void givenZeroOrNegativeAmount_whenDebiting_thenThrowsIllegalArgumentException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+      assertThatThrownBy(
+              () -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot debit money");
 
-    var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
-    // Note: Money record constructor throws IllegalArgumentException if amount < 0,
-    // so to test negative amount passing to debit, we would have to bypass Money constructor.
-    // We'll test zero amount here.
+      assertThatThrownBy(
+              () -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot credit money");
+    }
 
-    // When / Then
-    assertThatThrownBy(() -> account.debit(zeroAmount))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Debit amount must be greater than zero");
-  }
+    @Test
+    @DisplayName("Dormant account blocks both debit and credit")
+    void givenDormantAccount_whenTransacting_thenBothAreBlocked() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.markDormant();
 
-  @Test
-  @DisplayName("Throws a CurrencyMismatchException when debiting a different currency")
-  void givenDifferentCurrency_whenDebiting_thenThrowsCurrencyMismatchException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+      // When / Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.DORMANT);
 
-    var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+      assertThatThrownBy(
+              () -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot debit money");
 
-    // When / Then
-    assertThatThrownBy(() -> account.debit(penAmount))
-        .isInstanceOf(
-            com.portfolio.banktransfercore.domain.shared.money.CurrencyMismatchException.class)
-        .hasMessageContaining("Cannot operate on different currencies");
-  }
+      assertThatThrownBy(
+              () -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot credit money");
+    }
 
-  @Test
-  @DisplayName("Increases the balance accordingly when crediting an account with a valid amount")
-  void givenValidAmount_whenCrediting_thenBalanceIncreasesAccordingly() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("150.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+    @Test
+    @DisplayName("Closed account blocks everything and rejects all transitions")
+    void givenClosedAccount_whenTransacting_thenEverythingIsBlocked() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.close();
 
-    var creditAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.USD);
-    var expectedBalance = new Money(new BigDecimal("200.00"), SupportedCurrency.USD);
+      // When / Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.CLOSED);
 
-    // When
-    account.credit(creditAmount);
+      assertThatThrownBy(
+              () -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot debit money");
 
-    // Then
-    assertThat(account.getBalance()).isEqualTo(expectedBalance);
-  }
+      assertThatThrownBy(
+              () -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot credit money");
 
-  @Test
-  @DisplayName("Throws an IllegalArgumentException when crediting a zero amount")
-  void givenZeroAmount_whenCrediting_thenThrowsIllegalArgumentException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+      assertThatThrownBy(() -> account.freeze())
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot freeze account from CLOSED");
 
-    var zeroAmount = new Money(new BigDecimal("0.00"), SupportedCurrency.USD);
+      assertThatThrownBy(() -> account.reactivate())
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot reactivate account from CLOSED");
+    }
 
-    // When / Then
-    assertThatThrownBy(() -> account.credit(zeroAmount))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Credit amount must be greater than zero");
-  }
+    @Test
+    @DisplayName("Frozen account cannot be investigated (invalid transition)")
+    void givenFrozenAccount_whenInvestigating_thenTransitionIsRejected() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.freeze();
 
-  @Test
-  @DisplayName("Throws a CurrencyMismatchException when crediting a different currency")
-  void givenDifferentCurrency_whenCrediting_thenThrowsCurrencyMismatchException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
+      // When / Then
+      assertThatThrownBy(() -> account.investigate())
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Cannot investigate account from FROZEN");
+    }
 
-    var penAmount = new Money(new BigDecimal("50.00"), SupportedCurrency.PEN);
+    @Test
+    @DisplayName("Frozen account can be reactivated back to active")
+    void givenFrozenAccount_whenReactivating_thenStatusBecomesActive() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.freeze();
 
-    // When / Then
-    assertThatThrownBy(() -> account.credit(penAmount))
-        .isInstanceOf(
-            com.portfolio.banktransfercore.domain.shared.money.CurrencyMismatchException.class)
-        .hasMessageContaining("Cannot operate on different currencies");
-  }
+      // When
+      account.reactivate();
 
-  @Test
-  @DisplayName("Throws a NullPointerException when creating an account with a null ID")
-  void givenNullAccountId_whenCreatingAccount_thenThrowsNullPointerException() {
-    // Given
-    var expectedNumber = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+      // Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+    }
 
-    // When / Then
-    assertThatThrownBy(() -> new Account(null, expectedNumber, initialBalance))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Account ID cannot be null");
-  }
+    @Test
+    @DisplayName("Dormant account can be reactivated back to active")
+    void givenDormantAccount_whenReactivating_thenStatusBecomesActive() {
+      // Given
+      var account =
+          new Account(
+              new AccountId(UUID.randomUUID()),
+              new AccountNumber("00219112345678901206"),
+              new Money(new BigDecimal("100"), SupportedCurrency.USD));
+      account.markDormant();
 
-  @Test
-  @DisplayName("Throws a NullPointerException when creating an account with a null account number")
-  void givenNullAccountNumber_whenCreatingAccount_thenThrowsNullPointerException() {
-    // Given
-    var expectedId = new AccountId(UUID.randomUUID());
-    var initialBalance = new Money(new BigDecimal("1000.00"), SupportedCurrency.USD);
+      // When
+      account.reactivate();
 
-    // When / Then
-    assertThatThrownBy(() -> new Account(expectedId, null, initialBalance))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Account number cannot be null");
-  }
-
-  @Test
-  @DisplayName("Throws a NullPointerException when creating an account with a null balance")
-  void givenNullBalance_whenCreatingAccount_thenThrowsNullPointerException() {
-    // Given
-    var expectedId = new AccountId(UUID.randomUUID());
-    var expectedNumber = new AccountNumber("00219112345678901206");
-
-    // When / Then
-    assertThatThrownBy(() -> new Account(expectedId, expectedNumber, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Initial balance cannot be null");
-  }
-
-  @Test
-  @DisplayName("Throws a NullPointerException when debiting a null amount")
-  void givenNullAmount_whenDebiting_thenThrowsNullPointerException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
-
-    // When / Then
-    assertThatThrownBy(() -> account.debit(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Transaction amount cannot be null");
-  }
-
-  @Test
-  @DisplayName("Throws a NullPointerException when crediting a null amount")
-  void givenNullAmount_whenCrediting_thenThrowsNullPointerException() {
-    // Given
-    var ANY_ID = new AccountId(UUID.randomUUID());
-    var ANY_NUMBER = new AccountNumber("00219112345678901206");
-    var initialBalance = new Money(new BigDecimal("100.00"), SupportedCurrency.USD);
-    var account = new Account(ANY_ID, ANY_NUMBER, initialBalance);
-
-    // When / Then
-    assertThatThrownBy(() -> account.credit(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Transaction amount cannot be null");
-  }
-
-  // --- State Transitions Tests ---
-
-  @Test
-  @DisplayName("Under investigation account blocks debit but allows credit")
-  void givenUnderInvestigationAccount_whenTransacting_thenOnlyCreditIsAllowed() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.investigate();
-
-    // When / Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.UNDER_INVESTIGATION);
-
-    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot debit money");
-
-    // Credit should succeed
-    account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD));
-    assertThat(account.getBalance())
-        .isEqualTo(new Money(new BigDecimal("150"), SupportedCurrency.USD));
-  }
-
-  @Test
-  @DisplayName("Frozen account blocks both debit and credit")
-  void givenFrozenAccount_whenTransacting_thenBothAreBlocked() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.freeze();
-
-    // When / Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.FROZEN);
-
-    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot debit money");
-
-    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot credit money");
-  }
-
-  @Test
-  @DisplayName("Dormant account blocks both debit and credit")
-  void givenDormantAccount_whenTransacting_thenBothAreBlocked() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.markDormant();
-
-    // When / Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.DORMANT);
-
-    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot debit money");
-
-    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot credit money");
-  }
-
-  @Test
-  @DisplayName("Closed account blocks everything and rejects all transitions")
-  void givenClosedAccount_whenTransacting_thenEverythingIsBlocked() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.close();
-
-    // When / Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.CLOSED);
-
-    assertThatThrownBy(() -> account.debit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot debit money");
-
-    assertThatThrownBy(() -> account.credit(new Money(new BigDecimal("50"), SupportedCurrency.USD)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot credit money");
-
-    assertThatThrownBy(() -> account.freeze())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot freeze account from CLOSED");
-
-    assertThatThrownBy(() -> account.reactivate())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot reactivate account from CLOSED");
-  }
-
-  @Test
-  @DisplayName("Frozen account cannot be investigated (invalid transition)")
-  void givenFrozenAccount_whenInvestigating_thenTransitionIsRejected() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.freeze();
-
-    // When / Then
-    assertThatThrownBy(() -> account.investigate())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Cannot investigate account from FROZEN");
-  }
-
-  @Test
-  @DisplayName("Frozen account can be reactivated back to active")
-  void givenFrozenAccount_whenReactivating_thenStatusBecomesActive() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.freeze();
-
-    // When
-    account.reactivate();
-
-    // Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-  }
-
-  @Test
-  @DisplayName("Dormant account can be reactivated back to active")
-  void givenDormantAccount_whenReactivating_thenStatusBecomesActive() {
-    // Given
-    var account =
-        new Account(
-            new AccountId(UUID.randomUUID()),
-            new AccountNumber("00219112345678901206"),
-            new Money(new BigDecimal("100"), SupportedCurrency.USD));
-    account.markDormant();
-
-    // When
-    account.reactivate();
-
-    // Then
-    assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+      // Then
+      assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+    }
   }
 }
