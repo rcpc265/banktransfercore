@@ -4,14 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Transfer {
+public class FundsTransfer {
   private UUID id;
   private String sourceAccountNumber;
   private String destinationAccountNumber;
   private BigDecimal amount;
   private LocalDateTime createdAt;
 
-  public Transfer(
+  public FundsTransfer(
       UUID id,
       String sourceAccountNumber,
       String destinationAccountNumber,

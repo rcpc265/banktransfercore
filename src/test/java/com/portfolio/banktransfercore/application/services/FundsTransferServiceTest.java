@@ -24,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ProcessTransferServiceTest {
+class FundsTransferServiceTest {
 
   @Mock private AccountRepositoryPort accountRepositoryPort;
 
-  @InjectMocks private ProcessTransferService transferService;
+  @InjectMocks private FundsTransferService transferService;
 
   private static final String ANY_SOURCE_NUMBER = "00219112345678901206";
   private static final String ANY_DESTINATION_NUMBER = "98765432101234567819";

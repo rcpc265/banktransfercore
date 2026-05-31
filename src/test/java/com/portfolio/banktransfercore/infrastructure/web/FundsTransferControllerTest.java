@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.portfolio.banktransfercore.application.ports.in.TransferUseCase;
+import com.portfolio.banktransfercore.application.ports.in.FundsTransferUseCase;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +15,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(TransferController.class)
-class TransferControllerTest {
+@WebMvcTest(FundsTransferController.class)
+class FundsTransferControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private TransferUseCase transferUseCase;
+  @MockBean private FundsTransferUseCase transferUseCase;
 
   @Test
   @DisplayName("When valid transfer request is POSTed, then returns 200 OK and executes use case")
@@ -32,14 +32,15 @@ class TransferControllerTest {
     var destinationNumber = "98765432101234567819";
     var amount = new BigDecimal("150.00");
     var currency = "USD";
-    var request = new TransferRequest(sourceNumber, destinationNumber, amount, currency);
+    var request = new FundsTransferRequest(sourceNumber, destinationNumber, amount, currency);
 
     // When
     mockMvc
         .perform(
             post("/api/transfers")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(
+                    java.util.Objects.requireNonNull(objectMapper.writeValueAsString(request))))
         // Then
         .andExpect(status().isOk());
 
