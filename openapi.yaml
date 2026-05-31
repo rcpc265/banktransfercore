@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Bank Transfer Core API
+  description: API specifications for executing bank funds transfers between accounts under Hexagonal Architecture constraints.
+  version: 0.0.1
+paths:
+  /api/transfers:
+    post:
+      summary: Execute a funds transfer
+      description: Debits funds from a source account and credits them to a destination account after enforcing domain rules.
+      operationId: transferFunds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundsTransferRequest'
+      responses:
+        '200':
+          description: Transfer executed successfully. Balances have been updated.
+        '400':
+          description: Bad Request. Invalid input data or format violations (e.g., negative amount, invalid account number structure, missing fields).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict. Violations of domain constraints (e.g., source and destination accounts are the same, insufficient funds, mismatching currencies).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FundsTransferRequest:
+      type: object
+      required:
+        - sourceNumber
+        - destinationNumber
+        - amount
+        - currency
+      properties:
+        sourceNumber:
+          type: string
+          description: The 20-digit bank account number of the sender.
+          example: '00219112345678901206'
+          pattern: '^\d{20}$'
+        destinationNumber:
+          type: string
+          description: The 20-digit bank account number of the receiver.
+          example: '98765432101234567819'
+          pattern: '^\d{20}$'
+        amount:
+          type: number
+          format: double
+          description: The positive amount of funds to be transferred. Must be greater than zero.
+          example: 150.00
+          minimum: 0.01
+        currency:
+          type: string
+          description: The ISO 3-letter currency code. Currently supported currencies.
+          example: 'USD'
+          enum:
+            - USD
+    ErrorResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+      properties:
+        message:
+          type: string
+          description: A detailed description of the error occurred.
+          example: 'Insufficient funds'
+        timestamp:
+          type: string
+          format: date-time
+          description: The date and time when the error was encountered.
+          example: '2026-05-31T09:00:00Z'
