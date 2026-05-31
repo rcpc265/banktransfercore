@@ -38,4 +38,13 @@ public class HexagonalArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("org.springframework..");
+
+  @ArchTest
+  static final ArchRule domain_layer_must_not_depend_on_application =
+      noClasses()
+          .that()
+          .resideInAPackage("..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..application..");
 }
