@@ -1,8 +1,8 @@
 package com.portfolio.banktransfercore.infrastructure.config;
 
-import com.portfolio.banktransfercore.application.ports.in.TransferUseCase;
+import com.portfolio.banktransfercore.application.ports.in.FundsTransferUseCase;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
-import com.portfolio.banktransfercore.application.services.ProcessTransferService;
+import com.portfolio.banktransfercore.application.services.FundsTransferService;
 import com.portfolio.banktransfercore.domain.account.Account;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfig {
 
   @Bean
-  public TransferUseCase transferUseCase() {
+  public FundsTransferUseCase transferUseCase() {
     AccountRepositoryPort mockRepository =
         new AccountRepositoryPort() {
           @Override
@@ -30,6 +30,6 @@ public class ApplicationConfig {
           public void save(Account account) {}
         };
 
-    return new ProcessTransferService(mockRepository);
+    return new FundsTransferService(mockRepository);
   }
 }

@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class TransferTest {
+class FundsTransferTest {
 
   @Test
   @DisplayName("Does not allow creating a Transfer with an amount equal to zero")
@@ -22,7 +22,9 @@ class TransferTest {
 
     // When & Then
     assertThatThrownBy(
-            () -> new Transfer(anyId, anySourceAccount, anyDestinationAccount, zeroAmount, anyDate))
+            () ->
+                new FundsTransfer(
+                    anyId, anySourceAccount, anyDestinationAccount, zeroAmount, anyDate))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Transfer amount must be greater than zero");
   }
@@ -40,7 +42,7 @@ class TransferTest {
     // When & Then
     assertThatThrownBy(
             () ->
-                new Transfer(
+                new FundsTransfer(
                     anyId, anySourceAccount, anyDestinationAccount, negativeAmount, anyDate))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Transfer amount must be greater than zero");
@@ -56,7 +58,8 @@ class TransferTest {
     var anyDate = LocalDateTime.now();
 
     // When & Then
-    assertThatThrownBy(() -> new Transfer(anyId, sameAccount, sameAccount, validAmount, anyDate))
+    assertThatThrownBy(
+            () -> new FundsTransfer(anyId, sameAccount, sameAccount, validAmount, anyDate))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Source and destination accounts cannot be the same");
   }
@@ -73,7 +76,7 @@ class TransferTest {
 
     // When
     var transfer =
-        new Transfer(
+        new FundsTransfer(
             expectedId,
             expectedSourceAccount,
             expectedDestinationAccount,
@@ -82,10 +85,10 @@ class TransferTest {
 
     // Then - Verificación fluida y emparejada
     assertThat(transfer)
-        .returns(expectedId, Transfer::getId)
-        .returns(expectedSourceAccount, Transfer::getSourceAccountNumber)
-        .returns(expectedDestinationAccount, Transfer::getDestinationAccountNumber)
-        .returns(expectedAmount, Transfer::getAmount)
-        .returns(expectedDate, Transfer::getCreatedAt);
+        .returns(expectedId, FundsTransfer::getId)
+        .returns(expectedSourceAccount, FundsTransfer::getSourceAccountNumber)
+        .returns(expectedDestinationAccount, FundsTransfer::getDestinationAccountNumber)
+        .returns(expectedAmount, FundsTransfer::getAmount)
+        .returns(expectedDate, FundsTransfer::getCreatedAt);
   }
 }

@@ -1,17 +1,17 @@
 package com.portfolio.banktransfercore.application.services;
 
-import com.portfolio.banktransfercore.application.ports.in.TransferUseCase;
+import com.portfolio.banktransfercore.application.ports.in.FundsTransferUseCase;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
 import com.portfolio.banktransfercore.domain.account.Account;
 import com.portfolio.banktransfercore.domain.shared.money.Money;
 import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
 import java.math.BigDecimal;
 
-public class ProcessTransferService implements TransferUseCase {
+public class FundsTransferService implements FundsTransferUseCase {
 
   private final AccountRepositoryPort accountRepositoryPort;
 
-  public ProcessTransferService(AccountRepositoryPort accountRepositoryPort) {
+  public FundsTransferService(AccountRepositoryPort accountRepositoryPort) {
     this.accountRepositoryPort = accountRepositoryPort;
   }
 
