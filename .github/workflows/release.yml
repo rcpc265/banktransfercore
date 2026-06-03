@@ -1,16 +1,15 @@
-name: Java CI with Maven
+name: Release
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - 'v*'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,14 +23,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Compile and run tests
-        run: mvn clean test
-
       - name: Build JAR
         run: mvn package -DskipTests
 
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: bank-transfer-core
-          path: target/*.jar
+          files: target/*.jar
+          generate_release_notes: true
+          make_latest: true
