@@ -1,6 +1,8 @@
 package com.portfolio.banktransfercore.adapter.out.persistence;
 
+import com.portfolio.banktransfercore.application.ports.out.AccountNotFoundException;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
+import com.portfolio.banktransfercore.application.ports.out.AccountsForFundsTransfer;
 import com.portfolio.banktransfercore.domain.account.Account;
 import com.portfolio.banktransfercore.domain.account.AccountId;
 import com.portfolio.banktransfercore.domain.account.AccountNumber;
@@ -31,6 +33,31 @@ public class AccountRepositoryAdapter implements AccountRepositoryPort {
   }
 
   @Override
+  public AccountsForFundsTransfer loadAccountsForTransfer(
+      AccountNumber sourceAccountNumber, AccountNumber destinationAccountNumber)
+      throws AccountNotFoundException {
+
+    AccountNumber firstToLock = sourceAccountNumber;
+    AccountNumber secondToLock = destinationAccountNumber;
+    boolean isSourceFirst = true;
+
+    if (sourceAccountNumber.compareTo(destinationAccountNumber) > 0) {
+      firstToLock = destinationAccountNumber;
+      secondToLock = sourceAccountNumber;
+      isSourceFirst = false;
+    }
+
+    Account firstAccount = fetchAndMapLockedAccount(firstToLock);
+    Account secondAccount = fetchAndMapLockedAccount(secondToLock);
+
+    if (isSourceFirst) {
+      return new AccountsForFundsTransfer(firstAccount, secondAccount);
+    } else {
+      return new AccountsForFundsTransfer(secondAccount, firstAccount);
+    }
+  }
+
+  @Override
   public void save(Account account) {
     AccountEntity entity = mapToEntity(account);
     accountJpaRepository.save(entity);
@@ -51,5 +78,14 @@ public class AccountRepositoryAdapter implements AccountRepositoryPort {
         account.getBalance().amount(),
         account.getBalance().currency().name(),
         account.getStatus().name());
+  }
+
+  private Account fetchAndMapLockedAccount(AccountNumber accountNumber)
+      throws AccountNotFoundException {
+    AccountEntity entity =
+        accountJpaRepository
+            .findLockedByAccountNumber(accountNumber.value())
+            .orElseThrow(() -> new AccountNotFoundException(accountNumber));
+    return mapToDomain(entity);
   }
 }

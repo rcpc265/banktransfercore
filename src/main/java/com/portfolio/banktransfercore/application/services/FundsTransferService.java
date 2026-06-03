@@ -1,8 +1,9 @@
 package com.portfolio.banktransfercore.application.services;
 
 import com.portfolio.banktransfercore.application.ports.in.FundsTransferUseCase;
+import com.portfolio.banktransfercore.application.ports.out.AccountNotFoundException;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
-import com.portfolio.banktransfercore.domain.account.Account;
+import com.portfolio.banktransfercore.application.ports.out.AccountsForFundsTransfer;
 import com.portfolio.banktransfercore.domain.account.AccountNumber;
 import com.portfolio.banktransfercore.domain.shared.money.Money;
 import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
@@ -22,21 +23,21 @@ public class FundsTransferService implements FundsTransferUseCase {
     AccountNumber source = new AccountNumber(sourceNumber);
     AccountNumber dest = new AccountNumber(destinationNumber);
 
-    Account sourceAccount =
-        accountRepositoryPort
-            .findByAccountNumber(source)
-            .orElseThrow(() -> new IllegalArgumentException("Source account does not exist"));
-
-    Account destinationAccount =
-        accountRepositoryPort
-            .findByAccountNumber(dest)
-            .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
+    AccountsForFundsTransfer accountsPair;
+    try {
+      accountsPair = accountRepositoryPort.loadAccountsForTransfer(source, dest);
+    } catch (AccountNotFoundException e) {
+      throw new IllegalArgumentException(
+          e.getAccountNumber().equals(source)
+              ? "Source account does not exist"
+              : "Destination account does not exist");
+    }
 
     var transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));
-    sourceAccount.debit(transferMoney);
-    destinationAccount.credit(transferMoney);
+    accountsPair.source().debit(transferMoney);
+    accountsPair.destination().credit(transferMoney);
 
-    accountRepositoryPort.save(sourceAccount);
-    accountRepositoryPort.save(destinationAccount);
+    accountRepositoryPort.save(accountsPair.source());
+    accountRepositoryPort.save(accountsPair.destination());
   }
 }

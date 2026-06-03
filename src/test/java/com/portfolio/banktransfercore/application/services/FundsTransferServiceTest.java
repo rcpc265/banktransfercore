@@ -7,14 +7,15 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
+import com.portfolio.banktransfercore.application.ports.out.AccountNotFoundException;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
+import com.portfolio.banktransfercore.application.ports.out.AccountsForFundsTransfer;
 import com.portfolio.banktransfercore.domain.account.Account;
 import com.portfolio.banktransfercore.domain.account.AccountId;
 import com.portfolio.banktransfercore.domain.account.AccountNumber;
 import com.portfolio.banktransfercore.domain.shared.money.Money;
 import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ class FundsTransferServiceTest {
 
   @Test
   @DisplayName("Executes a successful transfer between two existing accounts")
-  void givenValidAccountsAndFunds_whenExecutingTransfer_thenBalancesAreUpdatedAndSaved() {
+  void givenValidAccountsAndFunds_whenExecutingTransfer_thenBalancesAreUpdatedAndSaved()
+      throws AccountNotFoundException {
     // Given
     var anySourceId = UUID.randomUUID();
     var anyDestinationId = UUID.randomUUID();
@@ -52,10 +54,10 @@ class FundsTransferServiceTest {
             new AccountNumber(ANY_DESTINATION_NUMBER),
             initialDestinationBalance);
 
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
-        .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
-        .willReturn(Optional.of(destinationAccount));
+    given(
+            accountRepositoryPort.loadAccountsForTransfer(
+                new AccountNumber(ANY_SOURCE_NUMBER), new AccountNumber(ANY_DESTINATION_NUMBER)))
+        .willReturn(new AccountsForFundsTransfer(sourceAccount, destinationAccount));
 
     // When
     transferService.execute(ANY_SOURCE_NUMBER, ANY_DESTINATION_NUMBER, transferAmount, "USD");
@@ -73,12 +75,15 @@ class FundsTransferServiceTest {
 
   @Test
   @DisplayName("Throws exception when source account does not exist")
-  void givenMissingSourceAccount_whenExecutingTransfer_thenThrowsException() {
+  void givenMissingSourceAccount_whenExecutingTransfer_thenThrowsException()
+      throws AccountNotFoundException {
     // Given
     var anyAmount = new BigDecimal("100.00");
 
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
-        .willReturn(Optional.empty());
+    given(
+            accountRepositoryPort.loadAccountsForTransfer(
+                new AccountNumber(ANY_SOURCE_NUMBER), new AccountNumber(ANY_DESTINATION_NUMBER)))
+        .willThrow(new AccountNotFoundException(new AccountNumber(ANY_SOURCE_NUMBER)));
 
     // When & Then
     assertThatThrownBy(
@@ -93,19 +98,15 @@ class FundsTransferServiceTest {
 
   @Test
   @DisplayName("Throws exception when destination account does not exist")
-  void givenMissingDestinationAccount_whenExecutingTransfer_thenThrowsException() {
+  void givenMissingDestinationAccount_whenExecutingTransfer_thenThrowsException()
+      throws AccountNotFoundException {
     // Given
-    var anySourceId = UUID.randomUUID();
     var anyAmount = new BigDecimal("100.00");
-    var initialBalance = Money.of("500.00", SupportedCurrency.USD);
-    var sourceAccount =
-        new Account(
-            new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), initialBalance);
 
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
-        .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
-        .willReturn(Optional.empty());
+    given(
+            accountRepositoryPort.loadAccountsForTransfer(
+                new AccountNumber(ANY_SOURCE_NUMBER), new AccountNumber(ANY_DESTINATION_NUMBER)))
+        .willThrow(new AccountNotFoundException(new AccountNumber(ANY_DESTINATION_NUMBER)));
 
     // When & Then
     assertThatThrownBy(
@@ -121,7 +122,8 @@ class FundsTransferServiceTest {
   @Test
   @DisplayName("Throws exception when source account has insufficient funds")
   void
-      givenSourceAccountWithInsufficientFunds_whenExecutingTransfer_thenThrowsExceptionAndSavesNothing() {
+      givenSourceAccountWithInsufficientFunds_whenExecutingTransfer_thenThrowsExceptionAndSavesNothing()
+          throws AccountNotFoundException {
     // Given
     var anySourceId = UUID.randomUUID();
     var anyDestinationId = UUID.randomUUID();
@@ -137,10 +139,10 @@ class FundsTransferServiceTest {
             new AccountNumber(ANY_DESTINATION_NUMBER),
             Money.of("200.00", SupportedCurrency.USD));
 
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
-        .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
-        .willReturn(Optional.of(destinationAccount));
+    given(
+            accountRepositoryPort.loadAccountsForTransfer(
+                new AccountNumber(ANY_SOURCE_NUMBER), new AccountNumber(ANY_DESTINATION_NUMBER)))
+        .willReturn(new AccountsForFundsTransfer(sourceAccount, destinationAccount));
 
     // When & Then
     assertThatThrownBy(

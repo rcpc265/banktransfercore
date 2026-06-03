@@ -10,5 +10,9 @@ public interface AccountRepositoryPort {
 
   Optional<Account> findByAccountNumber(AccountNumber accountNumber);
 
+  AccountsForFundsTransfer loadAccountsForTransfer(
+      AccountNumber sourceAccountNumber, AccountNumber destinationAccountNumber)
+      throws AccountNotFoundException;
+
   void save(Account account);
 }
