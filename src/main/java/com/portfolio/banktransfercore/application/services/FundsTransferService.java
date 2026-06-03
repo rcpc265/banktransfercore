@@ -3,6 +3,7 @@ package com.portfolio.banktransfercore.application.services;
 import com.portfolio.banktransfercore.application.ports.in.FundsTransferUseCase;
 import com.portfolio.banktransfercore.application.ports.out.AccountRepositoryPort;
 import com.portfolio.banktransfercore.domain.account.Account;
+import com.portfolio.banktransfercore.domain.account.AccountNumber;
 import com.portfolio.banktransfercore.domain.shared.money.Money;
 import com.portfolio.banktransfercore.domain.shared.money.SupportedCurrency;
 import java.math.BigDecimal;
@@ -18,14 +19,17 @@ public class FundsTransferService implements FundsTransferUseCase {
   @Override
   public void execute(
       String sourceNumber, String destinationNumber, BigDecimal amount, String currency) {
+    AccountNumber source = new AccountNumber(sourceNumber);
+    AccountNumber dest = new AccountNumber(destinationNumber);
+
     Account sourceAccount =
         accountRepositoryPort
-            .findByAccountNumber(sourceNumber)
+            .findByAccountNumber(source)
             .orElseThrow(() -> new IllegalArgumentException("Source account does not exist"));
 
     Account destinationAccount =
         accountRepositoryPort
-            .findByAccountNumber(destinationNumber)
+            .findByAccountNumber(dest)
             .orElseThrow(() -> new IllegalArgumentException("Destination account does not exist"));
 
     var transferMoney = new Money(amount, SupportedCurrency.valueOf(currency));

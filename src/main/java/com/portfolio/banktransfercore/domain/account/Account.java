@@ -10,9 +10,19 @@ public class Account {
   private AccountStatus status = AccountStatus.ACTIVE;
 
   public Account(AccountId id, AccountNumber accountNumber, Money balance) {
+    this(id, accountNumber, balance, AccountStatus.ACTIVE);
+  }
+
+  private Account(AccountId id, AccountNumber accountNumber, Money balance, AccountStatus status) {
     this.id = Objects.requireNonNull(id, "Account ID cannot be null");
     this.accountNumber = Objects.requireNonNull(accountNumber, "Account number cannot be null");
     this.balance = Objects.requireNonNull(balance, "Initial balance cannot be null");
+    this.status = Objects.requireNonNull(status, "Status cannot be null");
+  }
+
+  public static Account reconstitute(
+      AccountId id, AccountNumber accountNumber, Money balance, AccountStatus status) {
+    return new Account(id, accountNumber, balance, status);
   }
 
   public void debit(Money amount) {

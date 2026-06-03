@@ -52,9 +52,9 @@ class FundsTransferServiceTest {
             new AccountNumber(ANY_DESTINATION_NUMBER),
             initialDestinationBalance);
 
-    given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
         .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(ANY_DESTINATION_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
         .willReturn(Optional.of(destinationAccount));
 
     // When
@@ -77,7 +77,7 @@ class FundsTransferServiceTest {
     // Given
     var anyAmount = new BigDecimal("100.00");
 
-    given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
         .willReturn(Optional.empty());
 
     // When & Then
@@ -102,9 +102,9 @@ class FundsTransferServiceTest {
         new Account(
             new AccountId(anySourceId), new AccountNumber(ANY_SOURCE_NUMBER), initialBalance);
 
-    given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
         .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(ANY_DESTINATION_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
         .willReturn(Optional.empty());
 
     // When & Then
@@ -137,9 +137,9 @@ class FundsTransferServiceTest {
             new AccountNumber(ANY_DESTINATION_NUMBER),
             Money.of("200.00", SupportedCurrency.USD));
 
-    given(accountRepositoryPort.findByAccountNumber(ANY_SOURCE_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_SOURCE_NUMBER)))
         .willReturn(Optional.of(sourceAccount));
-    given(accountRepositoryPort.findByAccountNumber(ANY_DESTINATION_NUMBER))
+    given(accountRepositoryPort.findByAccountNumber(new AccountNumber(ANY_DESTINATION_NUMBER)))
         .willReturn(Optional.of(destinationAccount));
 
     // When & Then
