@@ -2,7 +2,12 @@ package com.portfolio.banktransfercore.domain.account;
 
 import java.util.Objects;
 
-public record AccountNumber(String value) {
+public record AccountNumber(String value) implements Comparable<AccountNumber> {
+
+  @Override
+  public int compareTo(AccountNumber other) {
+    return this.value.compareTo(other.value);
+  }
 
   public AccountNumber {
     Objects.requireNonNull(value, "Account number cannot be null");
